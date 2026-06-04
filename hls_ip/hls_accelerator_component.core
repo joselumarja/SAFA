@@ -1,0 +1,17 @@
+CAPI=2:
+
+name: uclm:arco:hls_accelerator_component:1.0.0
+description: Streaming Accelerator FIFO Adapter
+
+filesets:
+  rtl:
+    files:
+    #top.v must be the name for hls design top file
+    @HLS_DESIGN_SYNTHESIZEZ_FILES
+    file_type: VerilogSource
+
+targets:
+  default: 
+    filesets:
+    - rtl
+    toplevel: top
