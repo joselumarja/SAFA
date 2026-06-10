@@ -4,8 +4,6 @@ module safa_wrapper #(
     input  logic clk_i,
     input  logic rst_ni,
 
-    input  logic start_i,
-
     input  fifo_pkg::fifo_req_t  hw_fifo_req_i,
     output fifo_pkg::fifo_resp_t hw_fifo_rsp_o,
     output logic                 hw_fifo_done_o
@@ -20,6 +18,8 @@ module safa_wrapper #(
     // ------------------------------------------------------------
     // Señales hacia la top HLS
     // ------------------------------------------------------------
+
+    logic start_i;
 
     logic [DATA_WIDTH-1:0] BUS_IN_dout;
     logic        BUS_IN_empty_n;
@@ -50,6 +50,7 @@ module safa_wrapper #(
     logic        in_fifo_wr_en;
     logic        in_fifo_rd_en;
 
+    assign start_i = 1;
     assign in_fifo_wr_en = hw_fifo_req_i.push && !in_fifo_full;
     assign in_fifo_rd_en = BUS_IN_read && !in_fifo_empty;
     assign in_fifo_almost_full = in_fifo_size > ALMOST_FULL_THRESHOLD;

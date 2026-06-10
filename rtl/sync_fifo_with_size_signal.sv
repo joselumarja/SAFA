@@ -13,7 +13,7 @@ module sync_fifo_with_size_signal #(
     output wire                 empty
 );
 
-    localparam int ADDR_WIDTH = $clog2(DEPTH)
+    localparam int ADDR_WIDTH = $clog2(DEPTH);
     localparam logic [ADDR_WIDTH-1:0] LAST_PTR = ADDR_WIDTH'(DEPTH - 1);
 
     // Memory to store FIFO data
