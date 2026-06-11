@@ -50,7 +50,10 @@ module safa_wrapper #(
     logic        in_fifo_wr_en;
     logic        in_fifo_rd_en;
 
-    assign start_i = 1;
+    logic start_condition;
+    logic accelerator_done_seen;
+
+    assign start_condition = hw_fifo_req_i.push && !in_fifo_full && ap_idle;
     assign in_fifo_wr_en = hw_fifo_req_i.push && !in_fifo_full;
     assign in_fifo_rd_en = BUS_IN_read && !in_fifo_empty;
     assign in_fifo_almost_full = in_fifo_size > ALMOST_FULL_THRESHOLD;
@@ -120,25 +123,46 @@ module safa_wrapper #(
     assign hw_fifo_rsp_o.empty    = out_fifo_empty;
 
     // ------------------------------------------------------------
-    // Control ap_start / ap_done
+    // Control start_i / ap_start / done
     // ------------------------------------------------------------
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
-            ap_start       <= 1'b0;
-            hw_fifo_done_o <= 1'b0;
+            start_i               <= 1'b0;
+            ap_start              <= 1'b0;
+            accelerator_done_seen <= 1'b0;
+            hw_fifo_done_o        <= 1'b0;
         end else begin
-            if (start_i && ap_idle) begin
-                ap_start       <= 1'b1;
-                hw_fifo_done_o <= 1'b0;
+            // Por defecto, start_i y ap_start duran solo 1 ciclo
+            start_i  <= 1'b0;
+            ap_start <= 1'b0;
+
+            // ----------------------------------------------------
+            // Pulso de arranque:
+            // solo ante escritura aceptada y acelerador en idle
+            // ----------------------------------------------------
+            if (start_condition) begin
+                start_i               <= 1'b1;
+                ap_start              <= 1'b1;
+                accelerator_done_seen <= 1'b0;
+                hw_fifo_done_o        <= 1'b0;
             end
 
-            if (ap_ready) begin
-                ap_start <= 1'b0;
-            end
-
+            // ----------------------------------------------------
+            // Se memoriza que el acelerador ha terminado
+            // ----------------------------------------------------
             if (ap_done) begin
-                hw_fifo_done_o <= 1'b1;
+                accelerator_done_seen <= 1'b1;
+            end
+
+            // ----------------------------------------------------
+            // done solo cuando:
+            // 1) el acelerador ha terminado
+            // 2) la FIFO de salida está vacía
+            // ----------------------------------------------------
+            if ((accelerator_done_seen || ap_done) && out_fifo_empty) begin
+                hw_fifo_done_o        <= 1'b1;
+                accelerator_done_seen <= 1'b0;
             end
         end
     end
