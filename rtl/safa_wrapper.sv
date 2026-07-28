@@ -1,6 +1,6 @@
 module safa_wrapper #(
     parameter int unsigned FIFO_DEPTH = @ACCELERATOR_FIFO_DEPTH@,
-    parameter int unsigned FIFO_ALMOST_FULL_MARGIN = 4
+    parameter int unsigned FIFO_ALMOST_FULL_MARGIN = @ACCELERATOR_FIFO_ALMOST_FULL_MARGIN@
 ) (
     input  logic clk_i,
     input  logic rst_ni,
